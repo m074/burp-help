@@ -65,8 +65,7 @@ known_ips = set()
 known_buckets = set()
 
 def send_message(bot_message: str):
-    bot_token = '5972530336:AAGHoS6AlWLm1imW49qT7Ri104y868PnaNA'
-    bot_chatID = '325968545'
+
     send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID  + '&parse_mode=Markdown'
     response = requests.post(send_text, data={"text": bot_message})
     response.raise_for_status()
