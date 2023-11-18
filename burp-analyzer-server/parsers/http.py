@@ -1,7 +1,7 @@
-from models.http import HttpRequestModel
+from models.http import HttpRequestModel, HttpResponseModel
 
 
-def http_request_parser(http_request: str):
+def http_request_parser(http_request: str) -> HttpRequestModel:
     request_body = ""
     is_body = False
     is_first_line = True
@@ -39,5 +39,30 @@ def http_request_parser(http_request: str):
         url=url,
         method=method,
         cookie=cookie,
-        headers=headers
+        headers=headers,
+        body=request_body
+    )
+
+
+def http_response_parser(http_request: str) -> HttpResponseModel:
+    response_body = ""
+    is_body = False
+    is_first_line = True
+    status = 200
+    headers = dict()
+    for line in http_request.split("\r\n"):
+        line = line.strip("\r\n")
+        if is_first_line:
+            is_first_line = False
+            protocol, status, *_ = line.split()
+            continue
+        if not line:
+            is_body = True
+        if is_body:
+            response_body += line + "\r\n"
+
+    return HttpResponseModel(
+        status=status,
+        headers=headers,
+        body=response_body
     )

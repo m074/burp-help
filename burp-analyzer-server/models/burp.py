@@ -2,6 +2,6 @@ from pydantic import BaseModel
 
 
 class BurpContent(BaseModel):
-    url: str
-    content: str
-    request_content: str
+    url: str | bytes | None
+    content: str | bytes | None
+    request_content: str | bytes | None
