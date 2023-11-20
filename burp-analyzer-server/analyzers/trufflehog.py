@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import re
 import string
 import subprocess
 import random
@@ -12,8 +11,6 @@ from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
-
-
 
 
 class TruffleHogAnalyzer(Analyzer):
@@ -43,14 +40,14 @@ class TruffleHogAnalyzer(Analyzer):
                 shell=True,
             )
             out, _ = proc.communicate()
+            os.remove(tempfile_path)
             if out:
                 try:
                     json_result = json.loads(out)
                     dict_result = dict(
                         (k, json_result.get(k)) for k in ('DetectorName', 'Raw', "ExtraData", "StructuredData"))
-                    print("**Hog hog** %s in %s" % (str(dict_result), self.request.url))
+                    return "TruffleHog: %s" % dict_result
                 except json.JSONDecodeError:
-                    print("**Hog hog** %s in %s" % (out, self.request.url))
-            os.remove(tempfile_path)
+                    return "TruffleHog: %s" % out
         except Exception:
             logger.exception("TruffleHog fail.")

@@ -44,7 +44,7 @@ S3_REGEX_LIST = [
     "//s3-[a-z0-9-]+\\.amazonaws\\.com/[a-z0-9._-]+",
 ]
 
-IP_REGEX = "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
+IP_REGEX = r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
 
 
 class TakeoverAnalyzer(Analyzer):
@@ -56,7 +56,7 @@ class TakeoverAnalyzer(Analyzer):
                 is_takeoverable = True
                 takeover_message += takeover_string
         if is_takeoverable:
-            print("Takeover %s".format(takeover_message))
+            return "Takeover: %s".format(takeover_message)
 
 
 class EndpointAnalyzer(Analyzer):
@@ -73,7 +73,7 @@ class EndpointAnalyzer(Analyzer):
         endpoints = list(set(parsed))
         if endpoints:
             endpoints_text = "\n".join(endpoints)
-            print("Endpoins %s in %s" % (endpoints_text, self.request.url))
+            return "Endpoints: %s" % endpoints_text
 
 
 class BucketEndpointAnalyzer(Analyzer):
@@ -89,7 +89,7 @@ class BucketEndpointAnalyzer(Analyzer):
                 s3_set.add(pb)
         if s3_set:
             bucket_text = "\n".join(s3_set)
-            print("Buckers: %s" % bucket_text)
+            return "Buckets: %s" % bucket_text
 
 
 class IpsAnalyzer(Analyzer):
@@ -101,4 +101,14 @@ class IpsAnalyzer(Analyzer):
         ips_set = set(posible_ips)
         if ips_set:
             ips_text = "\n".join(ips_set)
-            print("IPs: %s" % ips_text)
+            return "IPs: %s" % ips_text
+
+
+class RedirectAnalyzer(Analyzer):
+    async def analyze(self):
+        if "ref=" in self.request.url:
+            return
+        if self.request.method == "GET" and "=http" in self.request.url or "=/" in self.request.url:
+            return "PlausibleOpenRedirect:"
+
+

@@ -41,4 +41,5 @@ async def analyze_burp(burp_content: BurpContent):
 
 
 if __name__ == "__main__":
+    logger.info("Starting the app...")
     uvicorn.run("main:app", host='0.0.0.0', port=5000, log_level=logging.WARNING, workers=4)
