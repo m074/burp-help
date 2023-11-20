@@ -90,10 +90,10 @@ class BurpExtender(
                     "content": response,
                     "request_content": request,
                 }
-                print(data)
                 # url_reimu = 'http://127.0.0.1:5000/analyze-content'
                 url_reimu = "http://172.16.0.1:5000/analyze-content"
                 thread = Thread(target=send_request, args=(url_reimu, data))
+                thread_manager.remove_completed_threads()
                 thread.start()
                 thread_manager.add_thread(thread)
 

@@ -23,42 +23,42 @@ TEMP_FOLDER = "/tmp/"
 if os.name == "nt":
     TEMP_FOLDER = "D:\\"
 
-S3_REGEX_LIST = [
-    "[a-z0-9.-]+\\.s3\\.amazonaws\\.com",
-    "[a-z0-9.-]+\\.s3-[a-z0-9-]\\.amazonaws\\.com",
-    "[a-z0-9.-]+\\.s3-website[.-](eu|ap|us|ca|sa|cn)",
-    "//s3\\.amazonaws\\.com/[a-z0-9._-]+",
-    "//s3-[a-z0-9-]+\\.amazonaws\\.com/[a-z0-9._-]+",
-]
+# S3_REGEX_LIST = [
+#     "[a-z0-9.-]+\\.s3\\.amazonaws\\.com",
+#     "[a-z0-9.-]+\\.s3-[a-z0-9-]\\.amazonaws\\.com",
+#     "[a-z0-9.-]+\\.s3-website[.-](eu|ap|us|ca|sa|cn)",
+#     "//s3\\.amazonaws\\.com/[a-z0-9._-]+",
+#     "//s3-[a-z0-9-]+\\.amazonaws\\.com/[a-z0-9._-]+",
+# ]
 
-TAKEOVER_STRING_LIST = [
-    "There is no app configured at that hostname",
-    "NoSuchBucket",
-    "No Such Account",
-    "You're Almost There",
-    "a GitHub Pages site here",
-    "There's nothing here",
-    "project not found",
-    "Your CNAME settings",
-    "InvalidBucketName",
-    "PermanentRedirect",
-    "The specified bucket does not exist",
-    "Repository not found",
-    "Sorry, We Couldn't Find That Page",
-    "The feed has not been found.",
-    "The thing you were looking for is no longer here, or never was",
-    "Please renew your subscription",
-    "There isn't a Github Pages site here.",
-    "We could not find what you're looking for.",
-    "No settings were found for this company:",
-    "No such app",
-    "is not a registered InCloud YouTrack",
-    "Unrecognized domain",
-    "project not found",
-    "This UserVoice subdomain is currently available!",
-    "Do you want to register",
-    "Help Center Closed",
-]
+# TAKEOVER_STRING_LIST = [
+#     "There is no app configured at that hostname",
+#     "NoSuchBucket",
+#     "No Such Account",
+#     "You're Almost There",
+#     "a GitHub Pages site here",
+#     "There's nothing here",
+#     "project not found",
+#     "Your CNAME settings",
+#     "InvalidBucketName",
+#     "PermanentRedirect",
+#     "The specified bucket does not exist",
+#     "Repository not found",
+#     "Sorry, We Couldn't Find That Page",
+#     "The feed has not been found.",
+#     "The thing you were looking for is no longer here, or never was",
+#     "Please renew your subscription",
+#     "There isn't a Github Pages site here.",
+#     "We could not find what you're looking for.",
+#     "No settings were found for this company:",
+#     "No such app",
+#     "is not a registered InCloud YouTrack",
+#     "Unrecognized domain",
+#     "project not found",
+#     "This UserVoice subdomain is currently available!",
+#     "Do you want to register",
+#     "Help Center Closed",
+# ]
 
 IP_REGEX = "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
 
@@ -143,22 +143,22 @@ def analyze_content():
             break
     if is_takeoverable:
         send_message("Posible takeover in ```%s```" % (url))
-    # TRUFFLEHOG
-    if os.name != "nt":  # linux
-        with open(tempfile_path, "w", encoding="utf-8") as tempfile:
-            tempfile.write(content)
-        proc = subprocess.Popen(
-            "/home/vaati/go/bin/trufflehog filesystem "
-            + tempfile_path
-            + " -j --no-verification",
-            stdout=subprocess.PIPE,
-            shell=True,
-        )
-        out, _ = proc.communicate()
-        logger.info("salida de hog: %s", out)
-        if out:
-            send_message("**Hog hog** ```%s``` in ```%s```" % (str(out), url))
-        os.remove(tempfile_path)
+    # # TRUFFLEHOG
+    # if os.name != "nt":  # linux
+    #     with open(tempfile_path, "w", encoding="utf-8") as tempfile:
+    #         tempfile.write(content)
+    #     proc = subprocess.Popen(
+    #         "/home/vaati/go/bin/trufflehog filesystem "
+    #         + tempfile_path
+    #         + " -j --no-verification",
+    #         stdout=subprocess.PIPE,
+    #         shell=True,
+    #     )
+    #     out, _ = proc.communicate()
+    #     logger.info("salida de hog: %s", out)
+    #     if out:
+    #         send_message("**Hog hog** ```%s``` in ```%s```" % (str(out), url))
+    #     os.remove(tempfile_path)
     return json.dumps({"status": "OK"})
 
 

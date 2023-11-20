@@ -29,28 +29,30 @@ def http_request_parser(http_request: str) -> HttpRequestModel:
                 for ck in cookie_var.split(";"):
                     k, *v = ck.split("=")
                     cookie[k.strip()] = "=".join(v).strip(" ;")
-            if line.startswith("Host:"):
+            elif line.startswith("Host:"):
                 hostname = ":".join(header_values).strip(" ")
                 url = "https://" + hostname + uri
             else:
-                headers[header_name.strip(" ")] = ":".join(header_values)
+                headers[header_name.strip(" ")] = ":".join(header_values).strip(" ")
 
+    request_body = request_body.strip("\r\n")
     return HttpRequestModel(
         url=url,
         method=method,
         cookie=cookie,
         headers=headers,
-        body=request_body
+        body=request_body,
+        raw=http_request
     )
 
 
-def http_response_parser(http_request: str) -> HttpResponseModel:
+def http_response_parser(http_response: str) -> HttpResponseModel:
     response_body = ""
     is_body = False
     is_first_line = True
     status = 200
     headers = dict()
-    for line in http_request.split("\r\n"):
+    for line in http_response.split("\r\n"):
         line = line.strip("\r\n")
         if is_first_line:
             is_first_line = False
@@ -64,5 +66,6 @@ def http_response_parser(http_request: str) -> HttpResponseModel:
     return HttpResponseModel(
         status=status,
         headers=headers,
-        body=response_body
+        body=response_body,
+        raw=http_response
     )
