@@ -36,6 +36,8 @@ def http_request_parser(http_request: str) -> HttpRequestModel:
                 headers[header_name.strip(" ")] = ":".join(header_values).strip(" ")
 
     request_body = request_body.strip("\r\n")
+    if request_body == "":
+        request_body = None
     return HttpRequestModel(
         url=url,
         method=method,
