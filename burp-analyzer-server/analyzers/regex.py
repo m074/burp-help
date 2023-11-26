@@ -1,7 +1,7 @@
 import logging
 import re
 
-from analyzers.common import Analyzer
+from analyzers.common import Analyzer, handle_async_exception
 from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,12 @@ TAKEOVER_STRING_LIST = [
     "project not found",
     "This UserVoice subdomain is currently available!",
     "Do you want to register",
-    "Help Center Closed",
+    # https://github.com/projectdiscovery/nuclei-templates/blob/master/takeovers/heroku-takeover.yaml
+    "<title>No such app</title>",
+    # https://github.com/projectdiscovery/nuclei-templates/blob/master/takeovers/cargo-takeover.yaml
+    "If you're moving your domain away from Cargo you must make this configuration through your registrar's DNS control panel.",
+    # https://github.com/projectdiscovery/nuclei-templates/blob/master/takeovers/zendesk-takeover.yaml
+    "this help center no longer exists", "Help Center Closed"
 ]
 
 S3_REGEX_LIST = [
@@ -48,6 +53,7 @@ IP_REGEX = r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
 
 
 class TakeoverAnalyzer(Analyzer):
+    @handle_async_exception
     async def analyze(self):
         takeover_message = ""
         is_takeoverable = False
@@ -60,6 +66,7 @@ class TakeoverAnalyzer(Analyzer):
 
 
 class EndpointAnalyzer(Analyzer):
+    @handle_async_exception
     async def analyze(self):
         possible_endpoints = re.findall(
             pattern="[\"|']\/[a-zA-Z0-9_?&=\/\-\#\.]*[\"|']",
@@ -77,6 +84,7 @@ class EndpointAnalyzer(Analyzer):
 
 
 class BucketEndpointAnalyzer(Analyzer):
+    @handle_async_exception
     async def analyze(self):
 
         s3_set = set()
@@ -93,6 +101,7 @@ class BucketEndpointAnalyzer(Analyzer):
 
 
 class IpsAnalyzer(Analyzer):
+    @handle_async_exception
     async def analyze(self):
         posible_ips = re.findall(
             pattern=IP_REGEX,
@@ -105,10 +114,9 @@ class IpsAnalyzer(Analyzer):
 
 
 class RedirectAnalyzer(Analyzer):
+    @handle_async_exception
     async def analyze(self):
         if "ref=" in self.request.url:
             return
         if self.request.method == "GET" and "=http" in self.request.url or "=/" in self.request.url:
             return "PlausibleOpenRedirect:"
-
-

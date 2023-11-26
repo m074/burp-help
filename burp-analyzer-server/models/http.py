@@ -6,7 +6,7 @@ class HttpRequestModel(BaseModel):
     method: str
     cookie: dict
     headers: dict
-    body: str
+    body: str | None
     raw: str
 
 

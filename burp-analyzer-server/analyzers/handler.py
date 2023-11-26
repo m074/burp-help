@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from analyzers.subdomainizer import SecretAnalyzer, CloudEndpointAnalyzer
@@ -30,11 +31,12 @@ class AnalyzerHandler:
             self.notifier = TelegramNotifier()
 
     async def run_analyzers(self):
-        for analyzer in analyzers_list:
-            try:
-                analyzer_instance = analyzer(request=self.request, response=self.response)
-                message = await analyzer_instance.analyze()
+        try:
+            analyzers_results = await asyncio.gather(
+                *[analyzer(request=self.request, response=self.response).analyze() for analyzer in analyzers_list]
+            )
+            for message in analyzers_results:
                 if message:
                     await self.notifier.notify(message, self.request.url)
-            except Exception:
-                logger.exception("Failed to run the analyzer: %s", analyzer.__name__)
+        except Exception:
+            logger.exception("Failed to run the analyzers...")

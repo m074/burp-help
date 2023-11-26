@@ -16,7 +16,7 @@ settings = get_settings()
 class TruffleHogAnalyzer(Analyzer):
 
     async def analyze(self):
-        await run_in_threadpool(self._analyze)
+        return await run_in_threadpool(self._analyze)
 
     def _analyze(self):
         try:

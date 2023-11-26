@@ -12,11 +12,6 @@ logger = logging.getLogger()
 app = FastAPI()
 
 
-@app.get("/")
-async def test():
-    return {"message": "Hello World"}
-
-
 @app.post("/analyze-content")
 async def analyze_burp(burp_content: BurpContent):
     try:

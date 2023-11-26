@@ -1,6 +1,8 @@
 import logging
 import re
 
+from starlette.concurrency import run_in_threadpool
+
 from analyzers.common import Analyzer
 from config.settings import get_settings
 
@@ -44,7 +46,7 @@ class CloudEndpointAnalyzer(Analyzer):
 
         self._regex_cloudlist = cloudlist
 
-    async def analyze(self):
+    def _analyze(self):
 
         cloud_set = set()
 
@@ -54,6 +56,9 @@ class CloudEndpointAnalyzer(Analyzer):
         if cloud_set:
             bucket_text = "\n".join(cloud_set)
             return "CloudEndpoints: %s" % bucket_text
+
+    async def analyze(self):
+        return  await run_in_threadpool(self._analyze)
 
 
 class SecretAnalyzer(Analyzer):
@@ -84,17 +89,19 @@ class SecretAnalyzer(Analyzer):
 
         self._secret_regex_list = re.compile(regex, re.MULTILINE | re.IGNORECASE)
 
-    async def analyze(self):
+    def _analyze(self):
 
         secret_set = set()
 
         matches = self._secret_regex_list.finditer(
             str(self.response.raw.replace('\n', ' ')))
         for match in matches:
-            print(match)
             if len(match.group()) > 3:
                 secret_set.add(match.group())
 
         if secret_set:
             bucket_text = "\n".join(secret_set)
             return "PotentialSecrets: %s" % bucket_text
+
+    async def analyze(self):
+        return await run_in_threadpool(self._analyze)
