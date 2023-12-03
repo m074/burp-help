@@ -9,6 +9,8 @@ from java.io import PrintWriter
 registered_request_urls = set()
 registered_response_urls = set()
 
+ONLY_SCOPE = True
+
 
 class ThreadManager:
     def __init__(self):
@@ -83,7 +85,7 @@ class BurpExtender(
         if url not in registered_response_urls or not is_get_request:
             if is_get_request:
                 registered_response_urls.add(url)
-            if self._callbacks.isInScope(url):
+            if self._callbacks.isInScope(url) or not ONLY_SCOPE:
                 response = messageInfo.getResponse().tostring()
                 data = {
                     "url": str(url),

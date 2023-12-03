@@ -20,7 +20,7 @@ class CsrfTokenAnalyzer(Analyzer):
             logger.debug("Ignoring not POST method in CSRF Analyzer")
             return
 
-        token_headers = self.request.headers.keys() | TOKEN_HEADERS
+        token_headers = TOKEN_HEADERS.intersection(self.request.headers.keys())
 
         if not token_headers:
             logger.debug("Not csrf token in request")

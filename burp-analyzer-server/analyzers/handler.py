@@ -35,8 +35,9 @@ class AnalyzerHandler:
             analyzers_results = await asyncio.gather(
                 *[analyzer(request=self.request, response=self.response).analyze() for analyzer in analyzers_list]
             )
-            for message in analyzers_results:
-                if message:
-                    await self.notifier.notify(message, self.request.url)
+            await self.notifier.send_messages([message for message in analyzers_results if message], self.request.url)
+            # for message in analyzers_results:
+            #     if message:
+            #         await self.notifier.notify(message, self.request.url)
         except Exception:
             logger.exception("Failed to run the analyzers...")
