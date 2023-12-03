@@ -1,25 +1,32 @@
-import json
-from threading import Thread
-
-import urllib2
-from burp import (IBurpExtender, IExtensionStateListener, IHttpListener,
-                  IProxyListener, IScannerListener)
+from burp import IBurpExtender
+from burp import IHttpListener
+from burp import IProxyListener
+from burp import IScannerListener
+from burp import IExtensionStateListener
 from java.io import PrintWriter
+from threading import Thread
+import json
+import urllib2
 
 registered_request_urls = set()
 registered_response_urls = set()
 
 ONLY_SCOPE = True
 
-
 class ThreadManager:
     def __init__(self):
         self.__thread_pool = []
+        self._remove_calls = 0
 
     def add_thread(self, thread):
         self.__thread_pool.append(thread)
 
     def remove_completed_threads(self):
+        if self._remove_calls < 10:
+            self._remove_calls += 1
+            return
+        if len(self.__thread_pool) < 10:
+            return
         for t in self.__thread_pool:
             if not t.is_alive():
                 # get results from thread
@@ -35,7 +42,7 @@ thread_manager = ThreadManager()
 def send_request(url, data):
     req = urllib2.Request(url)
     req.add_header("Content-Type", "application/json")
-    response = urllib2.urlopen(req, json.dumps(data, ensure_ascii=False), timeout=15)
+    response = urllib2.urlopen(req, json.dumps(data), timeout=10)
 
 
 class BurpExtender(
@@ -89,11 +96,12 @@ class BurpExtender(
                 response = messageInfo.getResponse().tostring()
                 data = {
                     "url": str(url),
-                    "content": response,
-                    "request_content": request,
+                    "content": response.encode(encoding="utf-8"),
+                    "request_content": request.encode(encoding="utf-8"),
                 }
-                # url_reimu = 'http://127.0.0.1:5000/analyze-content'
-                url_reimu = "http://172.16.0.1:5000/analyze-content"
+                # print(data)
+                url_reimu = 'http://127.0.0.1:5000/analyze-content'
+                # url_reimu = "http://172.16.0.1:5000/analyze-content"
                 thread = Thread(target=send_request, args=(url_reimu, data))
                 thread_manager.remove_completed_threads()
                 thread.start()
