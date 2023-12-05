@@ -23,7 +23,7 @@ class TelegramNotifier:
                 response = await client.post(send_text, data={"text": telegram_message})
                 response.raise_for_status()
         except Exception:
-            logger.error("Failed to send to telegram this message: %s", message)
+            logger.error("Failed to send to telegram this message: %s in url %s", message, url)
 
     async def send_messages(self, messages, url):
         try:

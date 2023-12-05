@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import random
 
 from analyzers.subdomainizer import SecretAnalyzer, CloudEndpointAnalyzer
 from analyzers.trufflehog import TruffleHogAnalyzer
@@ -9,7 +10,7 @@ from notifiers.telegram import TelegramNotifier
 
 analyzers_list = [
     # QueryAnalyzer,
-    TruffleHogAnalyzer,
+    # TruffleHogAnalyzer,
     TakeoverAnalyzer,
     EndpointAnalyzer,
     # BucketEndpointAnalyzer,

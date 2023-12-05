@@ -11,7 +11,9 @@ import urllib2
 registered_request_urls = set()
 registered_response_urls = set()
 
-ONLY_SCOPE = True
+IN_SCOPE = False
+ANALYZER_ENDPOINT = 'http://127.0.0.1:5000/analyze-content'
+
 
 class ThreadManager:
     def __init__(self):
@@ -66,22 +68,7 @@ class BurpExtender(
         # register ourselves as a Scanner listener
         callbacks.registerScannerListener(self)
         self._helpers = callbacks.getHelpers()
-
-    def _process_request(self, messageInfo):
-        pass
-        # url = self._helpers.analyzeRequest(messageInfo).getUrl()
-        # thread_manager.remove_completed_threads()
-        # if url not in registered_request_urls:
-        #     registered_request_urls.add(url)
-        #     if self._callbacks.isInScope(url):
-        #         # print(messageInfo.getRequest().tostring())
-        #         print(url)
-        #         data = {"url": str(url)}
-        #         # url_reimu = 'http://127.0.0.1:5000/analyze-url'
-        #         url_reimu = "http://172.16.0.1:5000/analyze-url"
-        #         thread = Thread(target=send_request, args=(url_reimu, data))
-        #         thread.start()
-        #         thread_manager.add_thread(thread)
+        print("Analyzer started!")
 
     def _process_response(self, messageInfo):
         url = self._helpers.analyzeRequest(messageInfo).getUrl()
@@ -92,27 +79,24 @@ class BurpExtender(
         if url not in registered_response_urls or not is_get_request:
             if is_get_request:
                 registered_response_urls.add(url)
-            if self._callbacks.isInScope(url) or not ONLY_SCOPE:
+            if self._callbacks.isInScope(url) or not IN_SCOPE:  # TODO SACAR
                 response = messageInfo.getResponse().tostring()
                 data = {
                     "url": str(url),
                     "content": response.encode(encoding="utf-8"),
                     "request_content": request.encode(encoding="utf-8"),
                 }
-                # print(data)
-                url_reimu = 'http://127.0.0.1:5000/analyze-content'
-                # url_reimu = "http://172.16.0.1:5000/analyze-content"
-                thread = Thread(target=send_request, args=(url_reimu, data))
-                thread_manager.remove_completed_threads()
+                thread = Thread(target=send_request, args=(ANALYZER_ENDPOINT, data))
+                # thread_manager.remove_completed_threads()
                 thread.start()
-                thread_manager.add_thread(thread)
+                # thread_manager.add_thread(thread)
 
     def processHttpMessage(self, toolFlag, messageIsRequest, messageInfo):
         return
 
     def processProxyMessage(self, messageIsRequest, message):
         messageInfo = message.getMessageInfo()
-        if messageIsRequest:  # es reuqest del proxy
-            self._process_request(messageInfo)
+        if messageIsRequest:
+            pass
         else:
             self._process_response(messageInfo)

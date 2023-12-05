@@ -73,10 +73,15 @@ class EndpointAnalyzer(Analyzer):
             string=self.response.raw,
         )
         parsed = []
-        for x in possible_endpoints:
-            x = x.strip("\"'")
-            if len(x) > 2:
-                parsed.append(x)
+        ignored_extensions = ["jpg", "png", "svg", "eot", "woff", "ttf"]
+        for endpoint in possible_endpoints:
+            endpoint = endpoint.strip("\"'\n\r").strip()
+            if len(endpoint) > 2:
+                for ignored_extension in ignored_extensions:
+                    if endpoint.endswith(ignored_extension):
+                        continue
+                parsed.append(endpoint)
+
         endpoints = list(set(parsed))
         if endpoints:
             endpoints_text = "\n".join(endpoints)
