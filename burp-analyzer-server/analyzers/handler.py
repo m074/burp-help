@@ -2,10 +2,12 @@ import asyncio
 import logging
 import random
 
+from analyzers.csrf import CsrfTokenAnalyzer
 from analyzers.subdomainizer import SecretAnalyzer, CloudEndpointAnalyzer
 from analyzers.trufflehog import TruffleHogAnalyzer
 from analyzers.dummy import QueryAnalyzer
-from analyzers.regex import TakeoverAnalyzer, EndpointAnalyzer, BucketEndpointAnalyzer, IpsAnalyzer, RedirectAnalyzer
+from analyzers.regex import TakeoverAnalyzer, EndpointAnalyzer, BucketEndpointAnalyzer, IpsAnalyzer, RedirectAnalyzer, \
+    SqlErrorAnalyzer
 from notifiers.telegram import TelegramNotifier
 
 analyzers_list = [
@@ -16,7 +18,9 @@ analyzers_list = [
     # BucketEndpointAnalyzer,
     RedirectAnalyzer,
     CloudEndpointAnalyzer,
-    SecretAnalyzer
+    SecretAnalyzer,
+    CsrfTokenAnalyzer,
+    SqlErrorAnalyzer
     # IpsAnalyzer
 ]
 
