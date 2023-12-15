@@ -139,7 +139,7 @@ class EndpointAnalyzer(Analyzer):
         ignored_extensions = ["jpg", "png", "svg", "eot", "woff", "ttf"]
         for endpoints in plausible_endpoints:
             for endpoint in endpoints:
-                endpoint = endpoint.strip(" \"'\n\r")
+                endpoint = endpoint.strip(" \"'\r\n")
                 if len(endpoint) > 2:
                     for ignored_extension in ignored_extensions:
                         if endpoint.endswith(ignored_extension):
@@ -161,30 +161,28 @@ class EndpointAnalyzer(Analyzer):
 class BucketEndpointAnalyzer(Analyzer):
     @handle_async_exception
     async def analyze(self):
-
-        s3_set = set()
+        buckets = set()
         for s3_regex in S3_REGEX_LIST:
-            posible_buckets = re.findall(
+            plausible_buckets = re.findall(
                 pattern=s3_regex,
                 string=self.response.body,
             )
-            for pb in posible_buckets:
-                s3_set.add(pb)
-        if s3_set:
-            bucket_text = "\n".join(s3_set)
+            for pb in plausible_buckets:
+                buckets.add(pb)
+        if buckets:
+            bucket_text = "\n".join(buckets)
             return "Buckets: %s" % bucket_text
 
 
 class IpsAnalyzer(Analyzer):
     @handle_async_exception
     async def analyze(self):
-        posible_ips = re.findall(
+        plausible_ips = re.findall(
             pattern=IP_REGEX,
             string=self.response.raw + self.request.raw,
         )
-        ips_set = set(posible_ips)
-        if ips_set:
-            ips_text = "\n".join(ips_set)
+        if plausible_ips:
+            ips_text = "\n".join(set(plausible_ips))
             return "IPs: %s" % ips_text
 
 
@@ -205,4 +203,4 @@ class SqlErrorAnalyzer(Analyzer):
             for err in errs:
                 sql_error = re.compile(err).search(str(self.response.raw))
                 if sql_error is not None:
-                    return f"Plausible{db_name}Error:"
+                    return f"PlausibleSQLError: {db_name}"
