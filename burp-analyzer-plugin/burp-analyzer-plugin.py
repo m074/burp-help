@@ -11,7 +11,7 @@ import urllib2
 registered_request_urls = set()
 registered_response_urls = set()
 
-IN_SCOPE = False
+ONLY_SCOPE = False
 ANALYZER_ENDPOINT = 'http://127.0.0.1:5000/analyze-content'
 
 
@@ -79,7 +79,7 @@ class BurpExtender(
         if url not in registered_response_urls or not is_get_request:
             if is_get_request:
                 registered_response_urls.add(url)
-            if self._callbacks.isInScope(url) or not IN_SCOPE:  # TODO SACAR
+            if self._callbacks.isInScope(url) or not ONLY_SCOPE:
                 response = messageInfo.getResponse().tostring()
                 data = {
                     "url": str(url),

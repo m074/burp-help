@@ -196,7 +196,6 @@ class RedirectAnalyzer(Analyzer):
 
 
 class SqlErrorAnalyzer(Analyzer):
-
     @handle_async_exception
     async def analyze(self):
         for db_name, errs in SQL_ERRORS.items():

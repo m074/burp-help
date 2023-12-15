@@ -12,7 +12,10 @@ logger = logging.getLogger()
 app = FastAPI()
 
 
-@app.post("/analyze-content")
+@app.post("/analyze-content",
+          description="Burp-Analyzer plugin endpoint",
+          responses={400: {"description": "Parsing error"},
+                     500: {"description": "Analyzer Handling error"}})
 async def analyze_burp(burp_content: BurpContent):
     try:
         http_request = http_request_parser(burp_content.request_content)
