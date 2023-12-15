@@ -75,6 +75,48 @@ SQL_ERRORS = {
 
 IP_REGEX = r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
 
+# copypasta from https://github.com/GerbenJavado/LinkFinder/blob/master/linkfinder.py
+ENDPOINT_REGEX = r"""
+
+  (?:"|')                               # Start newline delimiter
+
+  (
+    ((?:[a-zA-Z]{1,10}://|//)           # Match a scheme [a-Z]*1-10 or //
+    [^"'/]{1,}\.                        # Match a domainname (any character + dot)
+    [a-zA-Z]{2,}[^"']{0,})              # The domainextension and/or path
+
+    |
+
+    ((?:/|\.\./|\./)                    # Start with /,../,./
+    [^"'><,;| *()(%%$^/\\\[\]]          # Next character can't be...
+    [^"'><,;|()]{1,})                   # Rest of the characters can't be
+
+    |
+
+    ([a-zA-Z0-9_\-/]{1,}/               # Relative endpoint with /
+    [a-zA-Z0-9_\-/]{1,}                 # Resource name
+    \.(?:[a-zA-Z]{1,4}|action)          # Rest + extension (length 1-4 or action)
+    (?:[\?|#][^"|']{0,}|))              # ? or # mark with parameters
+
+    |
+
+    ([a-zA-Z0-9_\-/]{1,}/               # REST API (no extension) with /
+    [a-zA-Z0-9_\-/]{3,}                 # Proper REST endpoints usually have 3+ chars
+    (?:[\?|#][^"|']{0,}|))              # ? or # mark with parameters
+
+    |
+
+    ([a-zA-Z0-9_\-]{1,}                 # filename
+    \.(?:php|asp|aspx|jsp|json|
+         action|html|js|txt|xml)        # . + extension
+    (?:[\?|#][^"|']{0,}|))              # ? or # mark with parameters
+
+  )
+
+  (?:"|')                               # End newline delimiter
+
+"""
+
 
 class TakeoverAnalyzer(Analyzer):
     @handle_async_exception
@@ -92,20 +134,24 @@ class TakeoverAnalyzer(Analyzer):
 class EndpointAnalyzer(Analyzer):
     @handle_async_exception
     async def analyze(self):
-        possible_endpoints = re.findall(
+        plausible_endpoints = re.findall(re.compile(ENDPOINT_REGEX, re.VERBOSE), self.response.body)
+        parsed = set()
+        ignored_extensions = ["jpg", "png", "svg", "eot", "woff", "ttf"]
+        for endpoints in plausible_endpoints:
+            for endpoint in endpoints:
+                endpoint = endpoint.strip(" \"'\n\r")
+                if len(endpoint) > 2:
+                    for ignored_extension in ignored_extensions:
+                        if endpoint.endswith(ignored_extension):
+                            continue
+                    parsed.add(endpoint)
+        endpoints = re.findall(
             pattern="[\"|']\/[a-zA-Z0-9_?&=\/\-\#\.]*[\"|']",
             string=self.response.raw,
         )
-        parsed = []
-        ignored_extensions = ["jpg", "png", "svg", "eot", "woff", "ttf"]
-        for endpoint in possible_endpoints:
-            endpoint = endpoint.strip("\"'\n\r").strip()
+        for endpoint in endpoints:
             if len(endpoint) > 2:
-                for ignored_extension in ignored_extensions:
-                    if endpoint.endswith(ignored_extension):
-                        continue
-                parsed.append(endpoint)
-
+                parsed.add(endpoint)
         endpoints = list(set(parsed))
         if endpoints:
             endpoints_text = "\n".join(endpoints)
