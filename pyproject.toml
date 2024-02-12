@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "burp-analyzer-server"
+version = "0.1.0"
+description = "Burp Analyzer Server"
+authors = ["Matias Ota"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.109.2"
+pydantic = "^2.6.1"
+pydantic-settings = "^2.1.0"
+uvicorn = "^0.27.1"
+httpx = "^0.26.0"
+pre-commit = "^3.6.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
