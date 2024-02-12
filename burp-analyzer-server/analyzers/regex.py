@@ -36,9 +36,11 @@ TAKEOVER_STRING_LIST = [
     # https://github.com/projectdiscovery/nuclei-templates/blob/master/takeovers/heroku-takeover.yaml
     "<title>No such app</title>",
     # https://github.com/projectdiscovery/nuclei-templates/blob/master/takeovers/cargo-takeover.yaml
-    "If you're moving your domain away from Cargo you must make this configuration through your registrar's DNS control panel.",
+    "If you're moving your domain away from Cargo you must make "
+    "this configuration through your registrar's DNS control panel.",
     # https://github.com/projectdiscovery/nuclei-templates/blob/master/takeovers/zendesk-takeover.yaml
-    "this help center no longer exists", "Help Center Closed"
+    "this help center no longer exists",
+    "Help Center Closed",
 ]
 
 S3_REGEX_LIST = [
@@ -51,29 +53,64 @@ S3_REGEX_LIST = [
 
 SQL_ERRORS = {
     "MySQL": (
-        r"SQL syntax.*MySQL", r"Warning.*mysql_.*", r"valid MySQL result", r"MySqlClient\.", r"MySQL Query fail.*",
-        r"SQL syntax.*MariaDB server.*", r"SQL ERROR.*"),
+        r"SQL syntax.*MySQL",
+        r"Warning.*mysql_.*",
+        r"valid MySQL result",
+        r"MySqlClient\.",
+        r"MySQL Query fail.*",
+        r"SQL syntax.*MariaDB server.*",
+        r"SQL ERROR.*",
+    ),
     "PostgreSQL": (
-        r"PostgreSQL.*ERROR", r"Warning.*\Wpg_.*", r"valid PostgreSQL result", r"Npgsql\.", r"Warning.*PostgreSQL"),
-    "Microsoft SQL Server": (r"Driver.* SQL[\-\_\ ]*Server", r"OLE DB.* SQL Server",
-                             r"(\W|\A)SQL Server.*Driver", r"Warning.*mssql_.*",
-                             r"(\W|\A)SQL Server.*[0-9a-fA-F]{8}",
-                             r"(?s)Exception.*\WSystem\.Data\.SqlClient\.", r"(?s)Exception.*\WRoadhouse\.Cms\.",
-                             r"Msg \d+, Level \d+, State \d+", r"Unclosed quotation mark after the character string",
-                             r"Microsoft OLE DB Provider for ODBC Drivers"),
-    "Microsoft Access": (r"Microsoft Access Driver", r"Microsoft JET Database Engine", r"Access Database Engine"),
+        r"PostgreSQL.*ERROR",
+        r"Warning.*\Wpg_.*",
+        r"valid PostgreSQL result",
+        r"Npgsql\.",
+        r"Warning.*PostgreSQL",
+    ),
+    "Microsoft SQL Server": (
+        r"Driver.* SQL[\-\_\ ]*Server",
+        r"OLE DB.* SQL Server",
+        r"(\W|\A)SQL Server.*Driver",
+        r"Warning.*mssql_.*",
+        r"(\W|\A)SQL Server.*[0-9a-fA-F]{8}",
+        r"(?s)Exception.*\WSystem\.Data\.SqlClient\.",
+        r"(?s)Exception.*\WRoadhouse\.Cms\.",
+        r"Msg \d+, Level \d+, State \d+",
+        r"Unclosed quotation mark after the character string",
+        r"Microsoft OLE DB Provider for ODBC Drivers",
+    ),
+    "Microsoft Access": (
+        r"Microsoft Access Driver",
+        r"Microsoft JET Database Engine",
+        r"Access Database Engine",
+    ),
     "Oracle": (
-        r"\bORA-[0-9][0-9][0-9][0-9]", r"Oracle error", r"Oracle.*Driver", r"Microsoft OLE DB Provider for Oracle",
-        r"Warning.*\Woci_.*", r"Warning.*\Wora_.*"),
+        r"\bORA-[0-9][0-9][0-9][0-9]",
+        r"Oracle error",
+        r"Oracle.*Driver",
+        r"Microsoft OLE DB Provider for Oracle",
+        r"Warning.*\Woci_.*",
+        r"Warning.*\Wora_.*",
+    ),
     "IBM DB2": (r"CLI Driver.*DB2", r"DB2 SQL error", r"\bdb2_\w+\("),
-    "SQLite": (r"SQLite/JDBCDriver", r"SQLite.Exception",
-               r"System.Data.SQLite.SQLiteException", r"Warning.*sqlite_.*",
-               r"Warning.*SQLite3::", r"\[SQLITE_ERROR\]"),
+    "SQLite": (
+        r"SQLite/JDBCDriver",
+        r"SQLite.Exception",
+        r"System.Data.SQLite.SQLiteException",
+        r"Warning.*sqlite_.*",
+        r"Warning.*SQLite3::",
+        r"\[SQLITE_ERROR\]",
+    ),
     "Informix": (r"Warning.*ibase_.*", r"com.informix.jdbc"),
-    "Sybase": (r"(?i)Warning.*sybase.*", r"Sybase message", r"Sybase.*Server message.*")
+    "Sybase": (
+        r"(?i)Warning.*sybase.*",
+        r"Sybase message",
+        r"Sybase.*Server message.*",
+    ),
 }
 
-IP_REGEX = r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
+IP_REGEX = r"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
 
 # copypasta from https://github.com/GerbenJavado/LinkFinder/blob/master/linkfinder.py
 ENDPOINT_REGEX = r"""
@@ -81,11 +118,6 @@ ENDPOINT_REGEX = r"""
   (?:"|')                               # Start newline delimiter
 
   (
-    ((?:[a-zA-Z]{1,10}://|//)           # Match a scheme [a-Z]*1-10 or //
-    [^"'/]{1,}\.                        # Match a domainname (any character + dot)
-    [a-zA-Z]{2,}[^"']{0,})              # The domainextension and/or path
-
-    |
 
     ((?:/|\.\./|\./)                    # Start with /,../,./
     [^"'><,;| *()(%%$^/\\\[\]]          # Next character can't be...
@@ -128,13 +160,15 @@ class TakeoverAnalyzer(Analyzer):
                 is_takeoverable = True
                 takeover_message += takeover_string
         if is_takeoverable:
-            return "Takeover: %s".format(takeover_message)
+            return "Takeover: {}".format(takeover_message)
 
 
 class EndpointAnalyzer(Analyzer):
     @handle_async_exception
     async def analyze(self):
-        plausible_endpoints = re.findall(re.compile(ENDPOINT_REGEX, re.VERBOSE), self.response.body)
+        plausible_endpoints = re.findall(
+            re.compile(ENDPOINT_REGEX, re.VERBOSE), self.response.body
+        )
         parsed = set()
         ignored_extensions = ["jpg", "png", "svg", "eot", "woff", "ttf"]
         for endpoints in plausible_endpoints:
@@ -191,7 +225,11 @@ class RedirectAnalyzer(Analyzer):
     async def analyze(self):
         if "ref=" in self.request.url:
             return
-        if self.request.method == "GET" and "=http" in self.request.url or "=/" in self.request.url:
+        if (
+            self.request.method == "GET"
+            and "=http" in self.request.url
+            or "=/" in self.request.url
+        ):
             return "PlausibleOpenRedirect:"
 
 
