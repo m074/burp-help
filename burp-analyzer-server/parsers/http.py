@@ -35,7 +35,7 @@ def http_request_parser(http_request: str) -> HttpRequestModel:
             else:
                 headers[header_name.strip(" ")] = ":".join(header_values).strip(" ")
 
-    request_body = request_body.strip("\r\n")
+    request_body = request_body.strip("\r\n ")
     if request_body == "":
         request_body = None
     return HttpRequestModel(
@@ -44,7 +44,7 @@ def http_request_parser(http_request: str) -> HttpRequestModel:
         cookie=cookie,
         headers=headers,
         body=request_body,
-        raw=http_request
+        raw=http_request,
     )
 
 
@@ -66,8 +66,5 @@ def http_response_parser(http_response: str) -> HttpResponseModel:
             response_body += line + "\r\n"
 
     return HttpResponseModel(
-        status=status,
-        headers=headers,
-        body=response_body,
-        raw=http_response
+        status=status, headers=headers, body=response_body, raw=http_response
     )
