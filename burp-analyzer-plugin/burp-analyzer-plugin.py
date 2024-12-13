@@ -1,18 +1,16 @@
-from burp import IBurpExtender
-from burp import IHttpListener
-from burp import IProxyListener
-from burp import IScannerListener
-from burp import IExtensionStateListener
-from java.io import PrintWriter
-from threading import Thread
 import json
+from threading import Thread
+
 import urllib2
+from burp import (IBurpExtender, IExtensionStateListener, IHttpListener,
+                  IProxyListener, IScannerListener)
+from java.io import PrintWriter
 
 registered_request_urls = set()
 registered_response_urls = set()
 
 ONLY_SCOPE = False
-ANALYZER_ENDPOINT = 'http://127.0.0.1:5000/analyze-content'
+ANALYZER_ENDPOINT = "http://127.0.0.1:5000/analyze-content"
 
 
 class ThreadManager:
@@ -84,7 +82,7 @@ class BurpExtender(
                 data = {
                     "url": str(url),
                     "content": response.encode(encoding="utf-8"),
-                    "request_content": request.encode(encoding="utf-8"),
+                    "requestContent": request.encode(encoding="utf-8"),
                 }
                 thread = Thread(target=send_request, args=(ANALYZER_ENDPOINT, data))
                 # thread_manager.remove_completed_threads()

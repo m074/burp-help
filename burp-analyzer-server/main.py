@@ -1,9 +1,8 @@
 import logging
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
-
 from analyzers.handler import AnalyzerHandler
+from fastapi import FastAPI, HTTPException
 from models.burp import BurpContent
 from parsers.http import http_request_parser, http_response_parser
 
@@ -12,13 +11,17 @@ logger = logging.getLogger()
 app = FastAPI()
 
 
-@app.post("/analyze-content",
-          description="Burp-Analyzer plugin endpoint",
-          responses={400: {"description": "Parsing error"},
-                     500: {"description": "Analyzer Handling error"}})
+@app.post(
+    "/analyze",
+    description="Burp-Analyzer plugin endpoint",
+    responses={
+        400: {"description": "Parsing error"},
+        500: {"description": "Analyzer Handling error"},
+    },
+)
 async def analyze_burp(burp_content: BurpContent):
     try:
-        http_request = http_request_parser(burp_content.request_content)
+        http_request = http_request_parser(burp_content.requestContent)
         logger.debug(http_request.url)
         http_response = http_response_parser(burp_content.content)
         logger.debug(http_response.status)
@@ -40,4 +43,6 @@ async def analyze_burp(burp_content: BurpContent):
 
 if __name__ == "__main__":
     logger.info("Starting the app...")
-    uvicorn.run("main:app", host='0.0.0.0', port=5000, log_level=logging.WARNING, workers=6)
+    uvicorn.run(
+        "main:app", host="0.0.0.0", port=5000, log_level=logging.WARNING, workers=6
+    )

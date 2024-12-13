@@ -1,13 +1,13 @@
 import asyncio
 import logging
-import random
 
 from analyzers.csrf import CsrfTokenAnalyzer
-from analyzers.subdomainizer import SecretAnalyzer, CloudEndpointAnalyzer
-from analyzers.trufflehog import TruffleHogAnalyzer
 from analyzers.dummy import QueryAnalyzer
-from analyzers.regex import TakeoverAnalyzer, EndpointAnalyzer, BucketEndpointAnalyzer, IpsAnalyzer, RedirectAnalyzer, \
-    SqlErrorAnalyzer
+from analyzers.regex import (BucketEndpointAnalyzer, EndpointAnalyzer,
+                             IpsAnalyzer, RedirectAnalyzer, SqlErrorAnalyzer,
+                             TakeoverAnalyzer)
+from analyzers.subdomainizer import CloudEndpointAnalyzer, SecretAnalyzer
+from analyzers.trufflehog import TruffleHogAnalyzer
 from notifiers.telegram import TelegramNotifier
 
 analyzers_list = [
@@ -20,7 +20,7 @@ analyzers_list = [
     CloudEndpointAnalyzer,
     SecretAnalyzer,
     CsrfTokenAnalyzer,
-    SqlErrorAnalyzer
+    SqlErrorAnalyzer,
     # IpsAnalyzer
 ]
 
@@ -38,9 +38,14 @@ class AnalyzerHandler:
     async def run_analyzers(self):
         try:
             analyzers_results = await asyncio.gather(
-                *[analyzer(request=self.request, response=self.response).analyze() for analyzer in analyzers_list]
+                *[
+                    analyzer(request=self.request, response=self.response).analyze()
+                    for analyzer in analyzers_list
+                ]
             )
-            await self.notifier.send_messages([message for message in analyzers_results if message], self.request.url)
+            await self.notifier.send_messages(
+                [message for message in analyzers_results if message], self.request.url
+            )
             # for message in analyzers_results:
             #     if message:
             #         await self.notifier.notify(message, self.request.url)
