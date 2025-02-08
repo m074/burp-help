@@ -1,4 +1,5 @@
 import json
+import time
 from threading import Thread
 
 import urllib2
@@ -10,21 +11,19 @@ registered_request_urls = set()
 registered_response_urls = set()
 
 ONLY_SCOPE = False
-ANALYZER_ENDPOINT = "http://127.0.0.1:5000/analyze-content"
+ANALYZER_ENDPOINT = "http://127.0.0.1:5000/analyze"
 
 
 class ThreadManager:
     def __init__(self):
         self.__thread_pool = []
-        self._remove_calls = 0
 
     def add_thread(self, thread):
+        if len(self.__thread_pool) > 10:
+            time.sleep(0.05)
         self.__thread_pool.append(thread)
 
     def remove_completed_threads(self):
-        if self._remove_calls < 10:
-            self._remove_calls += 1
-            return
         if len(self.__thread_pool) < 10:
             return
         for t in self.__thread_pool:
@@ -68,26 +67,44 @@ class BurpExtender(
         self._helpers = callbacks.getHelpers()
         print("Analyzer started!")
 
-    def _process_response(self, messageInfo):
+    def _process(self, messageInfo):
         url = self._helpers.analyzeRequest(messageInfo).getUrl()
-        request = messageInfo.getRequest().tostring()
+
+        request = self._helpers.analyzeRequest(messageInfo)
+        response = self._helpers.analyzeResponse(messageInfo.getResponse())
+        request_string = messageInfo.getRequest().tostring()
+        response_string = messageInfo.getResponse().tostring()
+
+        request_headers = request.getHeaders()
+        response_headers = response.getHeaders()
+        request_body_offset = request.getBodyOffset()
+        response_body_offset = response.getBodyOffset()
+        request_body = request_string[request_body_offset:]
+        response_body = response_string[response_body_offset:]
+
         is_get_request = False
-        if request.startswith("GET"):
+        if request.getMethod() == "GET":
             is_get_request = True
         if url not in registered_response_urls or not is_get_request:
             if is_get_request:
                 registered_response_urls.add(url)
             if self._callbacks.isInScope(url) or not ONLY_SCOPE:
-                response = messageInfo.getResponse().tostring()
                 data = {
                     "url": str(url),
-                    "content": response.encode(encoding="utf-8"),
-                    "requestContent": request.encode(encoding="utf-8"),
+                    "content": response_string.encode(encoding="utf-8"),
+                    "requestContent": request_string.encode(encoding="utf-8"),
+                    "requestHeaders": [str(request_header) for request_header in request_headers],
+                    "responseHeaders": [str(header) for header in response_headers],
+                    "requestBodyOffset": request_body_offset,
+                    "responseBodyOffset": response_body_offset,
+                    "requestBody": request_body,
+                    "responseBody": response_body
                 }
-                thread = Thread(target=send_request, args=(ANALYZER_ENDPOINT, data))
-                # thread_manager.remove_completed_threads()
+
+                thread = Thread(target=send_request, args=(ANALYZER_ENDPOINT, data))                 # send_request(ANALYZER_ENDPOINT, data)
+                thread_manager.remove_completed_threads()
                 thread.start()
-                # thread_manager.add_thread(thread)
+                thread_manager.add_thread(thread)
 
     def processHttpMessage(self, toolFlag, messageIsRequest, messageInfo):
         return
@@ -97,4 +114,4 @@ class BurpExtender(
         if messageIsRequest:
             pass
         else:
-            self._process_response(messageInfo)
+            self._process(messageInfo)
