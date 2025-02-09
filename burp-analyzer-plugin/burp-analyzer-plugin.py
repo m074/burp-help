@@ -72,8 +72,8 @@ class BurpExtender(
 
         request = self._helpers.analyzeRequest(messageInfo)
         response = self._helpers.analyzeResponse(messageInfo.getResponse())
-        request_string = messageInfo.getRequest().tostring()
-        response_string = messageInfo.getResponse().tostring()
+        request_string = messageInfo.getRequest()
+        response_string = messageInfo.getResponse()
 
         request_headers = request.getHeaders()
         response_headers = response.getHeaders()
@@ -91,14 +91,14 @@ class BurpExtender(
             if self._callbacks.isInScope(url) or not ONLY_SCOPE:
                 data = {
                     "url": str(url),
-                    "content": response_string.encode(encoding="utf-8"),
-                    "requestContent": request_string.encode(encoding="utf-8"),
+                    "content": response_string.tostring().encode(encoding="utf-8"),
+                    "requestContent": request_string.tostring().encode(encoding="utf-8"),
                     "requestHeaders": [str(request_header) for request_header in request_headers],
                     "responseHeaders": [str(header) for header in response_headers],
                     "requestBodyOffset": request_body_offset,
                     "responseBodyOffset": response_body_offset,
-                    "requestBody": request_body,
-                    "responseBody": response_body
+                    "requestBody": request_body.tostring().encode(encoding="utf-8"),
+                    "responseBody": response_body.tostring().encode(encoding="utf-8")
                 }
 
                 thread = Thread(target=send_request, args=(ANALYZER_ENDPOINT, data))                 # send_request(ANALYZER_ENDPOINT, data)
