@@ -4,6 +4,7 @@ import uvicorn
 from analyzers.handler import AnalyzerHandler
 from fastapi import FastAPI, HTTPException
 from models.burp import BurpContent
+from parsers.burp_parser import parse_burp
 from parsers.http import http_request_parser, http_response_parser
 
 logging.basicConfig(level=logging.INFO)
@@ -21,10 +22,7 @@ app = FastAPI()
 )
 async def analyze_burp(burp_content: BurpContent):
     try:
-        http_request = http_request_parser(burp_content.requestContent)
-        logger.debug(http_request.url)
-        http_response = http_response_parser(burp_content.content)
-        logger.debug(http_response.status)
+        http_request, http_response = parse_burp(burp_content)
 
     except Exception:
         logger.exception("Failed to parse the HTTP")
@@ -44,5 +42,5 @@ async def analyze_burp(burp_content: BurpContent):
 if __name__ == "__main__":
     logger.info("Starting the app...")
     uvicorn.run(
-        "main:app", host="0.0.0.0", port=5000, log_level=logging.WARNING, workers=6
+        "main:app", host="0.0.0.0", port=5000, log_level=logging.DEBUG, workers=6
     )
